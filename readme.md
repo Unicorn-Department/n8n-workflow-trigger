@@ -2,12 +2,11 @@ This plugin provides a simple solution for your WordPress website visitors to tr
 
 ## Key Features:
 
-* Admin Settings Page - Configure your n8n instance base URL
-* Workflow Management - Create, manage, and delete workflow triggers
-* Shortcode System - Embed trigger buttons anywhere using [n8n_trigger id="workflow_id"]
-* AJAX Processing - Handles workflow triggering without page refreshes
-* Visual Feedback - Button states show processing, success, and error conditions
-* User Data - Automatically sends WordPress user data with the trigger
+* Configure your n8n instance base URL
+* Create, manage, and delete webhook workflow triggers
+* Embed trigger buttons anywhere using [n8n_trigger id="workflow_id"] shortcode
+* Handles workflow triggering without page refreshes
+* Button states show processing, success, and error conditions
 
 ## How to Use:
 
@@ -20,7 +19,7 @@ Add workflow triggers by providing:
 - Webhook ID/path (the part after your n8n base URL)
 - Custom button text (optional)
 
-**Make sure you set your n8n Webhook HTTP methode to POST.**
+⚠️ **Make sure you set your n8n Webhook HTTP methode to POST.**
 
 
 ### Use the generated shortcode on any post or page
