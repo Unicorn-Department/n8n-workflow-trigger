@@ -56,6 +56,14 @@ function n8n_trigger_settings_init()
         "n8nTriggerPlugin",
         "n8n_trigger_settings_section"
     );
+
+    add_settings_field(
+        "n8n_auth_token",
+        __("N8N Authentication Token", "n8n-workflow-trigger"),
+        "n8n_auth_token_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_settings_section"
+    );
 }
 add_action("admin_init", "n8n_trigger_settings_init");
 
@@ -98,37 +106,6 @@ function n8n_auth_token_render()
         "n8n-workflow-trigger"
     ); ?></p>
     <?php
-}
-
-/**
- * Register settings
- */
-function n8n_trigger_settings_init()
-{
-    register_setting("n8nTriggerPlugin", "n8n_trigger_settings");
-
-    add_settings_section(
-        "n8n_trigger_settings_section",
-        __("N8N Workflow Settings", "n8n-workflow-trigger"),
-        "n8n_trigger_settings_section_callback",
-        "n8nTriggerPlugin"
-    );
-
-    add_settings_field(
-        "n8n_base_url",
-        __("N8N Base URL", "n8n-workflow-trigger"),
-        "n8n_base_url_render",
-        "n8nTriggerPlugin",
-        "n8n_trigger_settings_section"
-    );
-
-    add_settings_field(
-        "n8n_auth_token",
-        __("N8N Authentication Token", "n8n-workflow-trigger"),
-        "n8n_auth_token_render",
-        "n8nTriggerPlugin",
-        "n8n_trigger_settings_section"
-    );
 }
 
 /**
@@ -620,6 +597,16 @@ function n8n_test_workflow_ajax_handler()
         ];
     }
 
+    // Prepare headers
+    $headers = [
+        "Content-Type" => "application/json",
+    ];
+
+    // Add authorization header if token exists
+    if (!empty($settings["n8n_auth_token"])) {
+        $headers["Authorization"] = "Bearer " . $settings["n8n_auth_token"];
+    }
+
     // Make the HTTP request to n8n
     $response = wp_remote_post($webhook_url, [
         "method" => "POST",
@@ -627,9 +614,7 @@ function n8n_test_workflow_ajax_handler()
         "redirection" => 5,
         "httpversion" => "1.0",
         "blocking" => true,
-        "headers" => [
-            "Content-Type" => "application/json",
-        ],
+        "headers" => $headers,
         "body" => json_encode([
             "source" => "wordpress_admin_test",
             "trigger_time" => current_time("mysql"),
@@ -877,6 +862,16 @@ function n8n_trigger_ajax_handler()
         ];
     }
 
+    // Prepare headers
+    $headers = [
+        "Content-Type" => "application/json",
+    ];
+
+    // Add authorization header if token exists
+    if (!empty($settings["n8n_auth_token"])) {
+        $headers["Authorization"] = "Bearer " . $settings["n8n_auth_token"];
+    }
+
     // Make the HTTP request to n8n with authentication
     $response = wp_remote_post($webhook_url, [
         "method" => "POST",
@@ -884,10 +879,7 @@ function n8n_trigger_ajax_handler()
         "redirection" => 5,
         "httpversion" => "1.0",
         "blocking" => true,
-        "headers" => [
-            "Content-Type" => "application/json",
-            "Authorization" => "Bearer " . $settings["n8n_auth_token"],
-        ],
+        "headers" => $headers,
         "body" => json_encode([
             "source" => "wordpress",
             "trigger_time" => current_time("mysql"),
