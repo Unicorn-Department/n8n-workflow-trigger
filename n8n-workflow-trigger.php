@@ -102,7 +102,7 @@ function n8n_auth_token_render()
         ? esc_attr($options["n8n_auth_token"])
         : ""; ?>' class="regular-text">
     <p class="description"><?php _e(
-        "Your n8n webhook authentication token",
+        "Your n8n webhook authentication token (optional - only needed if your n8n instance requires authentication)",
         "n8n-workflow-trigger"
     ); ?></p>
     <?php
@@ -570,14 +570,9 @@ function n8n_test_workflow_ajax_handler()
     $workflow = $workflows[$workflow_id];
     $settings = get_option("n8n_trigger_settings", []);
 
-    // Check for base URL and auth token
-    if (
-        empty($settings["n8n_base_url"]) ||
-        empty($settings["n8n_auth_token"])
-    ) {
-        wp_send_json_error(
-            "N8N base URL or authentication token not configured"
-        );
+    // Check for base URL
+    if (empty($settings["n8n_base_url"])) {
+        wp_send_json_error("N8N base URL not configured");
         return;
     }
 
@@ -835,14 +830,9 @@ function n8n_trigger_ajax_handler()
     $workflow = $workflows[$workflow_id];
     $settings = get_option("n8n_trigger_settings", []);
 
-    // Check for base URL and auth token
-    if (
-        empty($settings["n8n_base_url"]) ||
-        empty($settings["n8n_auth_token"])
-    ) {
-        wp_send_json_error(
-            "N8N base URL or authentication token not configured"
-        );
+    // Check for base URL
+    if (empty($settings["n8n_base_url"])) {
+        wp_send_json_error("N8N base URL not configured");
         return;
     }
 
