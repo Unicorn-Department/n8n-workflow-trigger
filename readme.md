@@ -24,3 +24,8 @@ Add workflow triggers by providing:
 
 ### Use the generated shortcode on any post or page
 When users click the button, it sends a POST request to your n8n webhook with site information and current user data (not available yet).
+
+
+## To do
+
+* Add server authentication
