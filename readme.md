@@ -19,7 +19,7 @@ Add workflow triggers by providing:
 - Webhook ID/path (the part after your n8n base URL)
 - Custom button text (optional)
 
-⚠️ **Make sure you set your n8n Webhook HTTP methode to POST.**
+⚠️ **Make sure you set your n8n Webhook HTTP method to POST.**
 
 
 ### Use the generated shortcode on any post or page
