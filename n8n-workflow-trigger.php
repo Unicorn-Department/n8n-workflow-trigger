@@ -85,6 +85,52 @@ function n8n_base_url_render()
     <?php
 }
 
+function n8n_auth_token_render()
+{
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='password' name='n8n_trigger_settings[n8n_auth_token]' value='<?php echo isset(
+        $options["n8n_auth_token"]
+    )
+        ? esc_attr($options["n8n_auth_token"])
+        : ""; ?>' class="regular-text">
+    <p class="description"><?php _e(
+        "Your n8n webhook authentication token",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+/**
+ * Register settings
+ */
+function n8n_trigger_settings_init()
+{
+    register_setting("n8nTriggerPlugin", "n8n_trigger_settings");
+
+    add_settings_section(
+        "n8n_trigger_settings_section",
+        __("N8N Workflow Settings", "n8n-workflow-trigger"),
+        "n8n_trigger_settings_section_callback",
+        "n8nTriggerPlugin"
+    );
+
+    add_settings_field(
+        "n8n_base_url",
+        __("N8N Base URL", "n8n-workflow-trigger"),
+        "n8n_base_url_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_settings_section"
+    );
+
+    add_settings_field(
+        "n8n_auth_token",
+        __("N8N Authentication Token", "n8n-workflow-trigger"),
+        "n8n_auth_token_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_settings_section"
+    );
+}
+
 /**
  * Options page content
  */
@@ -547,9 +593,14 @@ function n8n_test_workflow_ajax_handler()
     $workflow = $workflows[$workflow_id];
     $settings = get_option("n8n_trigger_settings", []);
 
-    // Check for base URL
-    if (empty($settings["n8n_base_url"])) {
-        wp_send_json_error("N8N base URL not configured");
+    // Check for base URL and auth token
+    if (
+        empty($settings["n8n_base_url"]) ||
+        empty($settings["n8n_auth_token"])
+    ) {
+        wp_send_json_error(
+            "N8N base URL or authentication token not configured"
+        );
         return;
     }
 
@@ -799,9 +850,14 @@ function n8n_trigger_ajax_handler()
     $workflow = $workflows[$workflow_id];
     $settings = get_option("n8n_trigger_settings", []);
 
-    // Check for base URL
-    if (empty($settings["n8n_base_url"])) {
-        wp_send_json_error("N8N base URL not configured");
+    // Check for base URL and auth token
+    if (
+        empty($settings["n8n_base_url"]) ||
+        empty($settings["n8n_auth_token"])
+    ) {
+        wp_send_json_error(
+            "N8N base URL or authentication token not configured"
+        );
         return;
     }
 
@@ -821,7 +877,7 @@ function n8n_trigger_ajax_handler()
         ];
     }
 
-    // Make the HTTP request to n8n
+    // Make the HTTP request to n8n with authentication
     $response = wp_remote_post($webhook_url, [
         "method" => "POST",
         "timeout" => 45,
@@ -830,6 +886,7 @@ function n8n_trigger_ajax_handler()
         "blocking" => true,
         "headers" => [
             "Content-Type" => "application/json",
+            "Authorization" => "Bearer " . $settings["n8n_auth_token"],
         ],
         "body" => json_encode([
             "source" => "wordpress",
