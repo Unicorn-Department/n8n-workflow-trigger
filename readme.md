@@ -7,6 +7,7 @@ This plugin provides a simple solution for your WordPress website visitors to tr
 * Embed trigger buttons anywhere using [n8n_trigger id="workflow_id"] shortcode
 * Handles workflow triggering without page refreshes
 * Button states show processing, success, and error conditions
+* Server authentication
 
 ## How to Use:
 
@@ -28,4 +29,4 @@ When users click the button, it sends a POST request to your n8n webhook with si
 
 ## To do:
 
-* Add server authentication
+- Add css button styling settings field
