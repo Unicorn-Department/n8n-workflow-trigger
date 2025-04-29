@@ -61,6 +61,7 @@ function n8n_trigger_activate()
                 workflow_id: workflowId,
                 nonce: n8nTrigger.nonce
             },
+            dataType: 'json',
             success: function(response) {
                 if (response.success) {
                     button.text("Success!")
