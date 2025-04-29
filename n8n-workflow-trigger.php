@@ -21,6 +21,141 @@ define("N8N_TRIGGER_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("N8N_TRIGGER_PLUGIN_URL", plugin_dir_url(__FILE__));
 
 /**
+ * Create plugin directories and files upon activation
+ * Moved to the top of the file to ensure it's defined before being called
+ */
+function n8n_trigger_activate()
+{
+    // Create assets directories if they don't exist
+    if (!file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/js")) {
+        if (!wp_mkdir_p(N8N_TRIGGER_PLUGIN_DIR . "assets/js")) {
+            // Silently fail - we'll check for directories later
+            return;
+        }
+    }
+    if (!file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/css")) {
+        if (!wp_mkdir_p(N8N_TRIGGER_PLUGIN_DIR . "assets/css")) {
+            // Silently fail - we'll check for directories later
+            return;
+        }
+    }
+
+    // Create JS file - using simple string concatenation instead of heredoc
+    $js_content = 'jQuery(document).ready(function($) {
+    $(".n8n-trigger-button").on("click", function(e) {
+        e.preventDefault();
+
+        const button = $(this);
+        const workflowId = button.data("workflow-id");
+        const originalText = button.text();
+
+        button.prop("disabled", true)
+              .text("Processing...")
+              .addClass("n8n-trigger-running");
+
+        $.ajax({
+            url: n8nTrigger.ajaxurl,
+            type: "POST",
+            data: {
+                action: "trigger_n8n_workflow",
+                workflow_id: workflowId,
+                nonce: n8nTrigger.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    button.text("Success!")
+                          .removeClass("n8n-trigger-running")
+                          .addClass("n8n-trigger-success");
+
+                    setTimeout(function() {
+                        button.text(originalText)
+                              .removeClass("n8n-trigger-success")
+                              .prop("disabled", false);
+                    }, 2000);
+                } else {
+                    button.text("Error")
+                          .removeClass("n8n-trigger-running")
+                          .addClass("n8n-trigger-error");
+
+                    setTimeout(function() {
+                        button.text(originalText)
+                              .removeClass("n8n-trigger-error")
+                              .prop("disabled", false);
+                    }, 2000);
+
+                    console.error("N8N workflow error:", response.data);
+                }
+            },
+            error: function(xhr, status, error) {
+                button.text("Error")
+                      .removeClass("n8n-trigger-running")
+                      .addClass("n8n-trigger-error");
+
+                setTimeout(function() {
+                    button.text(originalText)
+                          .removeClass("n8n-trigger-error")
+                          .prop("disabled", false);
+                }, 2000);
+
+                console.error("AJAX error:", error);
+            }
+        });
+    });
+});';
+
+    // Try to write the file, but don't cause a fatal error if it fails
+    if (
+        is_writable(N8N_TRIGGER_PLUGIN_DIR . "assets/js") ||
+        !file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/js/n8n-trigger.js")
+    ) {
+        @file_put_contents(
+            N8N_TRIGGER_PLUGIN_DIR . "assets/js/n8n-trigger.js",
+            $js_content
+        );
+    }
+
+    // Create CSS file with simple string concatenation
+    $css_content = '.n8n-trigger-button {
+    display: inline-block;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.n8n-trigger-button:hover {
+    text-decoration: none;
+}
+
+.n8n-trigger-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px #0073aa;
+}
+
+.n8n-trigger-button.n8n-trigger-running {
+    cursor: not-allowed;
+}';
+
+    // Try to write the file, but don't cause a fatal error if it fails
+    if (
+        is_writable(N8N_TRIGGER_PLUGIN_DIR . "assets/css") ||
+        !file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/css/n8n-trigger.css")
+    ) {
+        @file_put_contents(
+            N8N_TRIGGER_PLUGIN_DIR . "assets/css/n8n-trigger.css",
+            $css_content
+        );
+    }
+}
+
+// Register the activation hook - now after the function is defined
+register_activation_hook(__FILE__, "n8n_trigger_activate");
+
+/**
  * Admin menu setup
  */
 function n8n_trigger_add_admin_menu()
@@ -138,7 +273,10 @@ function n8n_trigger_settings_section_callback()
 
 function n8n_trigger_style_section_callback()
 {
-    echo __("Customize the appearance of the trigger buttons", "n8n-workflow-trigger");
+    echo __(
+        "Customize the appearance of the trigger buttons",
+        "n8n-workflow-trigger"
+    );
 }
 
 /**
@@ -146,7 +284,7 @@ function n8n_trigger_style_section_callback()
  */
 function n8n_base_url_render()
 {
-    $options = get_option("n8n_trigger_settings"); ?>
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='text' name='n8n_trigger_settings[n8n_base_url]' value='<?php echo isset(
         $options["n8n_base_url"]
     )
@@ -161,7 +299,7 @@ function n8n_base_url_render()
 
 function n8n_auth_token_render()
 {
-    $options = get_option("n8n_trigger_settings"); ?>
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='password' name='n8n_trigger_settings[n8n_auth_token]' value='<?php echo isset(
         $options["n8n_auth_token"]
     )
@@ -175,8 +313,9 @@ function n8n_auth_token_render()
 }
 
 // Button style field renderers
-function n8n_button_normal_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_normal_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_normal_color]' value='<?php echo isset(
         $options["n8n_button_normal_color"]
     )
@@ -189,8 +328,9 @@ function n8n_button_normal_color_render() {
     <?php
 }
 
-function n8n_button_text_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_text_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_text_color]' value='<?php echo isset(
         $options["n8n_button_text_color"]
     )
@@ -203,8 +343,9 @@ function n8n_button_text_color_render() {
     <?php
 }
 
-function n8n_button_hover_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_hover_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_hover_color]' value='<?php echo isset(
         $options["n8n_button_hover_color"]
     )
@@ -217,8 +358,9 @@ function n8n_button_hover_color_render() {
     <?php
 }
 
-function n8n_button_running_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_running_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_running_color]' value='<?php echo isset(
         $options["n8n_button_running_color"]
     )
@@ -231,8 +373,9 @@ function n8n_button_running_color_render() {
     <?php
 }
 
-function n8n_button_success_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_success_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_success_color]' value='<?php echo isset(
         $options["n8n_button_success_color"]
     )
@@ -245,8 +388,9 @@ function n8n_button_success_color_render() {
     <?php
 }
 
-function n8n_button_error_color_render() {
-    $options = get_option("n8n_trigger_settings"); ?>
+function n8n_button_error_color_render()
+{
+    $options = get_option("n8n_trigger_settings", []); ?>
     <input type='color' name='n8n_trigger_settings[n8n_button_error_color]' value='<?php echo isset(
         $options["n8n_button_error_color"]
     )
@@ -361,7 +505,8 @@ function n8n_trigger_options_page()
                     ); ?></th>
                     <td>
                         <input type="text" name="button_text" class="regular-text"
-                               value="<?php echo $edit_mode
+                               value="<?php echo $edit_mode &&
+                               isset($editing_workflow["button_text"])
                                    ? esc_attr($editing_workflow["button_text"])
                                    : "Trigger Workflow"; ?>">
                     </td>
@@ -373,7 +518,8 @@ function n8n_trigger_options_page()
                     ); ?></th>
                     <td>
                         <input type="text" name="custom_class" class="regular-text"
-                               value="<?php echo $edit_mode && isset($editing_workflow["custom_class"])
+                               value="<?php echo $edit_mode &&
+                               isset($editing_workflow["custom_class"])
                                    ? esc_attr($editing_workflow["custom_class"])
                                    : ""; ?>">
                         <p class="description"><?php _e(
@@ -419,7 +565,10 @@ function n8n_trigger_options_page()
                         "n8n-workflow-trigger"
                     ); ?></th>
                     <th><?php _e("Button Text", "n8n-workflow-trigger"); ?></th>
-                    <th><?php _e("Custom Class", "n8n-workflow-trigger"); ?></th>
+                    <th><?php _e(
+                        "Custom Class",
+                        "n8n-workflow-trigger"
+                    ); ?></th>
                     <th><?php _e("Shortcode", "n8n-workflow-trigger"); ?></th>
                     <th><?php _e("Actions", "n8n-workflow-trigger"); ?></th>
                 </tr>
@@ -435,11 +584,13 @@ function n8n_trigger_options_page()
                                 $workflow["webhook_id"]
                             ); ?></td>
                             <td><?php echo esc_html(
-                                $workflow["button_text"]
+                                isset($workflow["button_text"])
+                                    ? $workflow["button_text"]
+                                    : "Trigger Workflow"
                             ); ?></td>
-                            <td><?php echo isset($workflow["custom_class"]) ? esc_html(
-                                $workflow["custom_class"]
-                            ) : ""; ?></td>
+                            <td><?php echo isset($workflow["custom_class"])
+                                ? esc_html($workflow["custom_class"])
+                                : ""; ?></td>
                             <td>
                                 <input type="text" readonly value="[n8n_trigger id=&quot;<?php echo esc_attr(
                                     $id
@@ -660,7 +811,9 @@ function n8n_process_admin_actions()
                     "name" => sanitize_text_field($_POST["workflow_name"]),
                     "webhook_id" => sanitize_text_field($_POST["webhook_id"]),
                     "button_text" => sanitize_text_field($_POST["button_text"]),
-                    "custom_class" => sanitize_text_field($_POST["custom_class"]),
+                    "custom_class" => sanitize_text_field(
+                        $_POST["custom_class"]
+                    ),
                 ];
                 update_option("n8n_workflow_triggers", $workflows);
 
@@ -813,3 +966,4 @@ function n8n_test_workflow_ajax_handler()
             "response" => $response_body,
         ]);
     }
+}
