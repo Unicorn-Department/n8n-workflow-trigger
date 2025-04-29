@@ -8,6 +8,7 @@ This plugin provides a simple solution for your WordPress website visitors to tr
 * Handles workflow triggering without page refreshes
 * Button states show processing, success, and error conditions
 * Server authentication
+* Custom css button styling
 
 ## How to Use:
 
@@ -29,4 +30,4 @@ When users click the button, it sends a POST request to your n8n webhook with si
 
 ## To do:
 
-- Add css button styling settings field
+- Change authentication token to JWT

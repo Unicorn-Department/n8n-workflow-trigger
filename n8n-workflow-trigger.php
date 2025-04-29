@@ -3,7 +3,7 @@
  * Plugin Name: N8N Workflow Trigger
  * Plugin URI: https://unicorndepartment.com/n8n-workflow-trigger
  * Description: A simple WordPress plugin that allows users to trigger n8n workflows using a shortcode.
- * Version: 0.0.2
+ * Version: 0.0.3
  * Author: Igor van Oostveen
  * Author URI: https://unicorndepartment.com
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined("WPINC")) {
 }
 
 // Define plugin constants
-define("N8N_TRIGGER_VERSION", "0.0.2");
+define("N8N_TRIGGER_VERSION", "0.0.3");
 define("N8N_TRIGGER_PLUGIN_DIR", plugin_dir_path(__FILE__));
 define("N8N_TRIGGER_PLUGIN_URL", plugin_dir_url(__FILE__));
 
@@ -64,15 +64,81 @@ function n8n_trigger_settings_init()
         "n8nTriggerPlugin",
         "n8n_trigger_settings_section"
     );
+
+    // Add style settings section
+    add_settings_section(
+        "n8n_trigger_style_section",
+        __("Button Style Settings", "n8n-workflow-trigger"),
+        "n8n_trigger_style_section_callback",
+        "n8nTriggerPlugin"
+    );
+
+    // Button normal state
+    add_settings_field(
+        "n8n_button_normal_color",
+        __("Default Button Color", "n8n-workflow-trigger"),
+        "n8n_button_normal_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
+
+    add_settings_field(
+        "n8n_button_text_color",
+        __("Button Text Color", "n8n-workflow-trigger"),
+        "n8n_button_text_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
+
+    // Button hover state
+    add_settings_field(
+        "n8n_button_hover_color",
+        __("Hover Button Color", "n8n-workflow-trigger"),
+        "n8n_button_hover_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
+
+    // Button running state
+    add_settings_field(
+        "n8n_button_running_color",
+        __("Processing Button Color", "n8n-workflow-trigger"),
+        "n8n_button_running_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
+
+    // Button success state
+    add_settings_field(
+        "n8n_button_success_color",
+        __("Success Button Color", "n8n-workflow-trigger"),
+        "n8n_button_success_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
+
+    // Button error state
+    add_settings_field(
+        "n8n_button_error_color",
+        __("Error Button Color", "n8n-workflow-trigger"),
+        "n8n_button_error_color_render",
+        "n8nTriggerPlugin",
+        "n8n_trigger_style_section"
+    );
 }
 add_action("admin_init", "n8n_trigger_settings_init");
 
 /**
- * Settings section callback
+ * Settings section callbacks
  */
 function n8n_trigger_settings_section_callback()
 {
     echo __("Configure your n8n workflow triggers", "n8n-workflow-trigger");
+}
+
+function n8n_trigger_style_section_callback()
+{
+    echo __("Customize the appearance of the trigger buttons", "n8n-workflow-trigger");
 }
 
 /**
@@ -103,6 +169,91 @@ function n8n_auth_token_render()
         : ""; ?>' class="regular-text">
     <p class="description"><?php _e(
         "Your n8n webhook authentication token (optional - only needed if your n8n instance requires authentication)",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+// Button style field renderers
+function n8n_button_normal_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_normal_color]' value='<?php echo isset(
+        $options["n8n_button_normal_color"]
+    )
+        ? esc_attr($options["n8n_button_normal_color"])
+        : "#0073aa"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button in normal state",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+function n8n_button_text_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_text_color]' value='<?php echo isset(
+        $options["n8n_button_text_color"]
+    )
+        ? esc_attr($options["n8n_button_text_color"])
+        : "#ffffff"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button text",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+function n8n_button_hover_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_hover_color]' value='<?php echo isset(
+        $options["n8n_button_hover_color"]
+    )
+        ? esc_attr($options["n8n_button_hover_color"])
+        : "#005d8c"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button when hovered",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+function n8n_button_running_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_running_color]' value='<?php echo isset(
+        $options["n8n_button_running_color"]
+    )
+        ? esc_attr($options["n8n_button_running_color"])
+        : "#f0ad4e"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button when workflow is processing",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+function n8n_button_success_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_success_color]' value='<?php echo isset(
+        $options["n8n_button_success_color"]
+    )
+        ? esc_attr($options["n8n_button_success_color"])
+        : "#5cb85c"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button after successful workflow execution",
+        "n8n-workflow-trigger"
+    ); ?></p>
+    <?php
+}
+
+function n8n_button_error_color_render() {
+    $options = get_option("n8n_trigger_settings"); ?>
+    <input type='color' name='n8n_trigger_settings[n8n_button_error_color]' value='<?php echo isset(
+        $options["n8n_button_error_color"]
+    )
+        ? esc_attr($options["n8n_button_error_color"])
+        : "#d9534f"; ?>'>
+    <p class="description"><?php _e(
+        "Color of the button when an error occurs",
         "n8n-workflow-trigger"
     ); ?></p>
     <?php
@@ -215,6 +366,22 @@ function n8n_trigger_options_page()
                                    : "Trigger Workflow"; ?>">
                     </td>
                 </tr>
+                <tr>
+                    <th scope="row"><?php _e(
+                        "Custom Button Class",
+                        "n8n-workflow-trigger"
+                    ); ?></th>
+                    <td>
+                        <input type="text" name="custom_class" class="regular-text"
+                               value="<?php echo $edit_mode && isset($editing_workflow["custom_class"])
+                                   ? esc_attr($editing_workflow["custom_class"])
+                                   : ""; ?>">
+                        <p class="description"><?php _e(
+                            "Optional CSS classes to add to this specific button (space separated)",
+                            "n8n-workflow-trigger"
+                        ); ?></p>
+                    </td>
+                </tr>
             </table>
             <?php if ($edit_mode) {
                 submit_button(
@@ -252,6 +419,7 @@ function n8n_trigger_options_page()
                         "n8n-workflow-trigger"
                     ); ?></th>
                     <th><?php _e("Button Text", "n8n-workflow-trigger"); ?></th>
+                    <th><?php _e("Custom Class", "n8n-workflow-trigger"); ?></th>
                     <th><?php _e("Shortcode", "n8n-workflow-trigger"); ?></th>
                     <th><?php _e("Actions", "n8n-workflow-trigger"); ?></th>
                 </tr>
@@ -269,6 +437,9 @@ function n8n_trigger_options_page()
                             <td><?php echo esc_html(
                                 $workflow["button_text"]
                             ); ?></td>
+                            <td><?php echo isset($workflow["custom_class"]) ? esc_html(
+                                $workflow["custom_class"]
+                            ) : ""; ?></td>
                             <td>
                                 <input type="text" readonly value="[n8n_trigger id=&quot;<?php echo esc_attr(
                                     $id
@@ -325,7 +496,7 @@ function n8n_trigger_options_page()
                 } else {
                      ?>
                     <tr>
-                        <td colspan="5"><?php _e(
+                        <td colspan="6"><?php _e(
                             "No workflow triggers defined yet.",
                             "n8n-workflow-trigger"
                         ); ?></td>
@@ -452,6 +623,7 @@ function n8n_process_admin_actions()
                 "name" => sanitize_text_field($_POST["workflow_name"]),
                 "webhook_id" => sanitize_text_field($_POST["webhook_id"]),
                 "button_text" => sanitize_text_field($_POST["button_text"]),
+                "custom_class" => sanitize_text_field($_POST["custom_class"]),
             ];
             update_option("n8n_workflow_triggers", $workflows);
 
@@ -488,6 +660,7 @@ function n8n_process_admin_actions()
                     "name" => sanitize_text_field($_POST["workflow_name"]),
                     "webhook_id" => sanitize_text_field($_POST["webhook_id"]),
                     "button_text" => sanitize_text_field($_POST["button_text"]),
+                    "custom_class" => sanitize_text_field($_POST["custom_class"]),
                 ];
                 update_option("n8n_workflow_triggers", $workflows);
 
@@ -640,302 +813,3 @@ function n8n_test_workflow_ajax_handler()
             "response" => $response_body,
         ]);
     }
-}
-add_action("wp_ajax_test_n8n_workflow", "n8n_test_workflow_ajax_handler");
-
-/**
- * Enqueue scripts and styles
- */
-function n8n_trigger_enqueue_scripts()
-{
-    wp_enqueue_script(
-        "n8n-trigger-script",
-        N8N_TRIGGER_PLUGIN_URL . "assets/js/n8n-trigger.js",
-        ["jquery"],
-        N8N_TRIGGER_VERSION,
-        true
-    );
-
-    wp_localize_script("n8n-trigger-script", "n8nTrigger", [
-        "ajaxurl" => admin_url("admin-ajax.php"),
-        "nonce" => wp_create_nonce("n8n_trigger_nonce"),
-    ]);
-
-    wp_enqueue_style(
-        "n8n-trigger-style",
-        N8N_TRIGGER_PLUGIN_URL . "assets/css/n8n-trigger.css",
-        [],
-        N8N_TRIGGER_VERSION
-    );
-}
-add_action("wp_enqueue_scripts", "n8n_trigger_enqueue_scripts");
-
-/**
- * Create plugin directories and files upon activation
- */
-function n8n_trigger_activate()
-{
-    // Create assets directories if they don't exist
-    if (!file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/js")) {
-        wp_mkdir_p(N8N_TRIGGER_PLUGIN_DIR . "assets/js");
-    }
-    if (!file_exists(N8N_TRIGGER_PLUGIN_DIR . "assets/css")) {
-        wp_mkdir_p(N8N_TRIGGER_PLUGIN_DIR . "assets/css");
-    }
-
-    // Create JS file
-    $js_content = <<<'EOT'
-jQuery(document).ready(function($) {
-    $('.n8n-trigger-button').on('click', function(e) {
-        e.preventDefault();
-
-        const button = $(this);
-        const workflowId = button.data('workflow-id');
-        const originalText = button.text();
-
-        button.prop('disabled', true)
-              .text('Processing...')
-              .addClass('n8n-trigger-running');
-
-        $.ajax({
-            url: n8nTrigger.ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'trigger_n8n_workflow',
-                workflow_id: workflowId,
-                nonce: n8nTrigger.nonce
-            },
-            success: function(response) {
-                if (response.success) {
-                    button.text('Success!')
-                          .removeClass('n8n-trigger-running')
-                          .addClass('n8n-trigger-success');
-
-                    setTimeout(function() {
-                        button.text(originalText)
-                              .removeClass('n8n-trigger-success')
-                              .prop('disabled', false);
-                    }, 2000);
-                } else {
-                    button.text('Error')
-                          .removeClass('n8n-trigger-running')
-                          .addClass('n8n-trigger-error');
-
-                    setTimeout(function() {
-                        button.text(originalText)
-                              .removeClass('n8n-trigger-error')
-                              .prop('disabled', false);
-                    }, 2000);
-
-                    console.error('N8N workflow error:', response.data);
-                }
-            },
-            error: function(xhr, status, error) {
-                button.text('Error')
-                      .removeClass('n8n-trigger-running')
-                      .addClass('n8n-trigger-error');
-
-                setTimeout(function() {
-                    button.text(originalText)
-                          .removeClass('n8n-trigger-error')
-                          .prop('disabled', false);
-                }, 2000);
-
-                console.error('AJAX error:', error);
-            }
-        });
-    });
-});
-EOT;
-    file_put_contents(
-        N8N_TRIGGER_PLUGIN_DIR . "assets/js/n8n-trigger.js",
-        $js_content
-    );
-
-    // Create CSS file
-    $css_content = <<<'EOT'
-.n8n-trigger-button {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: #0073aa;
-    color: #ffffff;
-    text-decoration: none;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.n8n-trigger-button:hover {
-    background-color: #005d8c;
-    color: #ffffff;
-}
-
-.n8n-trigger-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 1px #ffffff, 0 0 0 3px #0073aa;
-}
-
-.n8n-trigger-button.n8n-trigger-running {
-    background-color: #f0ad4e;
-    cursor: not-allowed;
-}
-
-.n8n-trigger-button.n8n-trigger-success {
-    background-color: #5cb85c;
-}
-
-.n8n-trigger-button.n8n-trigger-error {
-    background-color: #d9534f;
-}
-EOT;
-    file_put_contents(
-        N8N_TRIGGER_PLUGIN_DIR . "assets/css/n8n-trigger.css",
-        $css_content
-    );
-}
-register_activation_hook(__FILE__, "n8n_trigger_activate");
-
-/**
- * AJAX handler for triggering workflows
- */
-function n8n_trigger_ajax_handler()
-{
-    // Verify nonce
-    if (
-        !isset($_POST["nonce"]) ||
-        !wp_verify_nonce($_POST["nonce"], "n8n_trigger_nonce")
-    ) {
-        wp_send_json_error("Invalid nonce");
-        return;
-    }
-
-    // Check for workflow ID
-    if (!isset($_POST["workflow_id"])) {
-        wp_send_json_error("Missing workflow ID");
-        return;
-    }
-
-    $workflow_id = sanitize_text_field($_POST["workflow_id"]);
-    $workflows = get_option("n8n_workflow_triggers", []);
-
-    // Check if workflow exists
-    if (!isset($workflows[$workflow_id])) {
-        wp_send_json_error("Workflow not found");
-        return;
-    }
-
-    $workflow = $workflows[$workflow_id];
-    $settings = get_option("n8n_trigger_settings", []);
-
-    // Check for base URL
-    if (empty($settings["n8n_base_url"])) {
-        wp_send_json_error("N8N base URL not configured");
-        return;
-    }
-
-    $base_url = trailingslashit($settings["n8n_base_url"]);
-    $webhook_url = $base_url . ltrim($workflow["webhook_id"], "/");
-
-    // Add current user info to the request
-    $user_data = [];
-    if (is_user_logged_in()) {
-        $current_user = wp_get_current_user();
-        $user_data = [
-            "user_id" => $current_user->ID,
-            "user_login" => $current_user->user_login,
-            "user_email" => $current_user->user_email,
-            "display_name" => $current_user->display_name,
-            "roles" => $current_user->roles,
-        ];
-    }
-
-    // Prepare headers
-    $headers = [
-        "Content-Type" => "application/json",
-    ];
-
-    // Add authorization header if token exists
-    if (!empty($settings["n8n_auth_token"])) {
-        $headers["Authorization"] = "Bearer " . $settings["n8n_auth_token"];
-    }
-
-    // Make the HTTP request to n8n with authentication
-    $response = wp_remote_post($webhook_url, [
-        "method" => "POST",
-        "timeout" => 45,
-        "redirection" => 5,
-        "httpversion" => "1.0",
-        "blocking" => true,
-        "headers" => $headers,
-        "body" => json_encode([
-            "source" => "wordpress",
-            "trigger_time" => current_time("mysql"),
-            "site_url" => get_site_url(),
-            "user" => $user_data,
-        ]),
-        "cookies" => [],
-    ]);
-
-    if (is_wp_error($response)) {
-        wp_send_json_error($response->get_error_message());
-        return;
-    }
-
-    $response_code = wp_remote_retrieve_response_code($response);
-    $response_body = wp_remote_retrieve_body($response);
-
-    if ($response_code >= 200 && $response_code < 300) {
-        wp_send_json_success([
-            "message" => "Workflow triggered successfully",
-            "response" => $response_body,
-        ]);
-    } else {
-        wp_send_json_error([
-            "message" => "Error triggering workflow",
-            "response_code" => $response_code,
-            "response" => $response_body,
-        ]);
-    }
-}
-add_action("wp_ajax_trigger_n8n_workflow", "n8n_trigger_ajax_handler");
-add_action("wp_ajax_nopriv_trigger_n8n_workflow", "n8n_trigger_ajax_handler");
-
-/**
- * Shortcode for displaying the trigger button
- */
-function n8n_trigger_shortcode($atts)
-{
-    $atts = shortcode_atts(
-        [
-            "id" => "",
-        ],
-        $atts,
-        "n8n_trigger"
-    );
-
-    if (empty($atts["id"])) {
-        return '<p class="n8n-trigger-error">Error: Workflow ID is required.</p>';
-    }
-
-    $workflows = get_option("n8n_workflow_triggers", []);
-
-    if (!isset($workflows[$atts["id"]])) {
-        return '<p class="n8n-trigger-error">Error: Workflow not found.</p>';
-    }
-
-    $workflow = $workflows[$atts["id"]];
-    $button_text = !empty($workflow["button_text"])
-        ? $workflow["button_text"]
-        : "Trigger Workflow";
-
-    return '<button class="n8n-trigger-button" data-workflow-id="' .
-        esc_attr($atts["id"]) .
-        '">' .
-        esc_html($button_text) .
-        "</button>";
-}
-
-add_shortcode("n8n_trigger", "n8n_trigger_shortcode");
